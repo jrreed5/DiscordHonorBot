@@ -10,7 +10,9 @@ def paginator(
     data: list[Any], data_vals: dict[str]
 ) -> list[Embed]:
     """Return filled paginator structure with data"""
-    RANK_EMOJIS = ["🥇", "🥈", "🥉"]
+    RANK_EMOJIS = ["<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>",
+                   "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>",
+                   "<:LowHonor:1199342578085154886>"]
 
     embeds = []
     limit_temp = limit
@@ -50,8 +52,10 @@ def paginator(
                 # Choosing what to put for each line based on command.
                 command = data_vals["type"]
                 if command == "topcounts":
-                    line_with_emoji = f"**{emoji}** {object['member']} - **{object['nword_count']:,}** n-words\n"
-                    line_without_emoji = f"**{rank_counter + 1}**) {object['member']} - **{object['low_honor_word_count']:,}** n-words\n"
+                    line_with_emoji = (f"<:LowHonor:1199342578085154886> {object['member']} -"
+                                       f" **{object['low_honor_word_count']:,}** low honor words\n")
+                    line_without_emoji = (f"**{rank_counter + 1}**) {object['member']} - "
+                                          f"**{object['low_honor_word_count']:,}** low honor words\n")
                 if emoji:
                     current_page += f"{line_with_emoji}"
                 else:
