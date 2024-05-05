@@ -42,24 +42,11 @@ class LowHonorWordCounter(commands.Cog):
         """Return bot message response"""
         msg = None
         if word_count < 5:
-            msg = random.choice(
-                [
-                    "<:LowHonor:1199342578085154886>"
-                ]
-            )
+            msg = "<:LowHonor:1199342578085154886>"
         elif word_count < 25:
-            msg = random.choice(
-                [
-                    "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>",
-                ]
-            )
+            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
         elif word_count < 100:
-            msg = random.choice(
-                [
-                 "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>",
-                 ":smiling_face_with_tear:"
-                 ]
-            )
+            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
         else:
             msg = random.choice(
                 [
@@ -68,7 +55,6 @@ class LowHonorWordCounter(commands.Cog):
             )
 
         return msg
-
     @commands.Cog.listener()
     async def on_message(self, message):
         """Detect low honor words"""

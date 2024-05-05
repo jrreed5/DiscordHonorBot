@@ -35,14 +35,6 @@ class Database:
         cursor.execute("SELECT COUNT(*) FROM guilds WHERE guild_id = ?", (guild_id,))
         count = cursor.fetchone()[0]
         return count > 0
-
-    @classmethod
-    async def create_database(cls, guild_id: int, guild_name: str) -> None:
-        """Initialize guild template in database"""
-        cursor.execute("INSERT INTO guilds (guild_id, guild_name, members, settings) VALUES (?, ?, ?, ?)", (guild_id, guild_name, "[]", "[]"))
-        conn.commit()
-        logging.info(f"Guild added! {guild_name} with id {guild_id}")
-
     @classmethod
     async def update_guilds(cls):
         """Update all guilds in database to have a settings field if they don't already."""
@@ -90,7 +82,7 @@ class Database:
         row = cursor.fetchone()
         if row:
             members = json.loads(row[0])
-            members.append({"id": member_id, "name": member_name, "low_honor_word_count": 0})
+            members.append({"id": member_id, "name": member_name, "high_honor_word_count":0, "low_honor_word_count": 0})
             cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
             conn.commit()
 
@@ -107,6 +99,19 @@ class Database:
                     cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
                     conn.commit()
                     break
+    @classmethod
+    async def increment_high_honor_word_count(cls, guild_id, member_id, count) -> None:
+        """Add to high honor word count of person's data info in server"""
+        cursor.execute("SELECT members FROM guilds WHERE guild_id = ?", (guild_id,))
+        row = cursor.fetchone()
+        if row:
+            members = json.loads(row[0])
+            for member in members:
+                if member["id"] == member_id:
+                    member["high_honor_word_count"] += count
+                    cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
+                    conn.commit()
+                    break
 
     @classmethod
     async def get_total_documents(cls) -> int:
@@ -114,6 +119,16 @@ class Database:
         cursor.execute("SELECT COUNT(*) FROM guilds")
         return cursor.fetchone()[0]
 
+    @classmethod
+    async def get_low_honor_word_server_total(cls, guild_id) -> int:
+        """Return integer sum of total low honor words said in a server"""
+        cursor.execute("SELECT members FROM guilds WHERE guild_id = ?", (guild_id,))
+        row = cursor.fetchone()
+        if row:
+            members = json.loads(row[0])
+            total = sum(member.get("high_honor_word_count", 0) for member in members)
+            return total
+        return 0
     @classmethod
     async def get_low_honor_word_server_total(cls, guild_id) -> int:
         """Return integer sum of total low honor words said in a server"""
