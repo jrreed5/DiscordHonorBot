@@ -1,7 +1,6 @@
 import os
 import platform
 import logging
-import base64
 from json import load
 from pathlib import Path
 
@@ -57,35 +56,6 @@ async def on_ready():
         f"Running on {platform.system()} {platform.release()} ({os.name})")
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over your messages"))
     # status_loop.start()
-
-
-@bot.slash_command(name="base64", description="Encode and decode in base64")
-async def b64(ctx, task, string=None):
-    if ctx.author.nick is None:
-        username = ctx.author.name
-    else:
-        username = ctx.author.nick
-
-    if task == 'encode':
-        string_bytes = string.encode("ascii")
-
-        b64bytes = base64.b64encode(string_bytes)
-        b64string = b64bytes.decode("ascii")
-
-        embed = discord.Embed(title=f"Encoded string for {username}:",
-                              description=b64string, colour=discord.Colour.green())
-        await ctx.send(embed=embed)
-
-    if task == 'decode':
-        b64bytes = string.encode("ascii")
-
-        string_bytes = base64.b64decode(b64bytes)
-        decoded_string = string_bytes.decode("ascii")
-
-        embed = discord.Embed(title=f"Decoded string for {username}:",
-                              description=decoded_string, colour=discord.Colour.green())
-        await ctx.send(embed=embed)
-
 
 @bot.slash_command(name="ping", description="Pong back latency")
 async def ping(ctx: discord.ApplicationContext):
