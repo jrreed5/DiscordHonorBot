@@ -42,11 +42,11 @@ class HighHonorWordCounter(commands.Cog):
         """Return bot message response"""
         msg = None
         if word_count < 5:
-            msg = "<:LowHonor:1199342578085154886>"
+            msg = "<:HighHonor:1199342542592933959>"
         elif word_count < 25:
-            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
+            msg = "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
         elif word_count < 100:
-            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
+            msg = "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
         else:
             msg = random.choice(
                 [

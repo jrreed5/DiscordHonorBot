@@ -9,7 +9,7 @@ class LinkCleanerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author == self.bot.user:
-            permissions = message.channel.guild.me.permissions_in(message.channel)
+            permissions = message.channel.permissions_for(message.channel.guild.me)
             # Suppress embeds for bot messages to avoid visual clutter
             if permissions.manage_messages:
                 await message.edit(suppress=True)
@@ -18,7 +18,7 @@ class LinkCleanerCog(commands.Cog):
                     await message.add_reaction('🗑')
 
         # Extract links and clean
-        urls = re.findall('(?P<url>https?://[^\s]+)', message.content)
+        urls = re.findall('(?P<url>https?://[^\\s]+)', message.content)
         cleaned = []
         for url in urls:
             if clear_url(url) != url:
@@ -26,7 +26,7 @@ class LinkCleanerCog(commands.Cog):
 
         # Send message and add reactions
         if cleaned:
-            text = 'It appears that you have sent one or more links with tracking parameters. Below are the same links with those fields removed:\n' + '\n'.join(cleaned)
+            text = 'This link has trackers! removing... \n' + '\n'.join(cleaned)
             await message.reply(text, mention_author=False)
 
     @commands.Cog.listener()

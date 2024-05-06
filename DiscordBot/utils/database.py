@@ -17,6 +17,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS guilds
                   settings TEXT)''')
 conn.commit()
 
+
 class Database:
     """SQLite database"""
 
@@ -29,12 +30,14 @@ class Database:
         """, (guild_id, guild_name, "[]", "[]"))
         conn.commit()  # Commit the transaction to save changes
         logging.info(f"Guild added! {guild_name} with id {guild_id}")
+
     @classmethod
     async def guild_in_database(cls, guild_id: int) -> bool:
         """Return True if guild is already recorded in database"""
         cursor.execute("SELECT COUNT(*) FROM guilds WHERE guild_id = ?", (guild_id,))
         count = cursor.fetchone()[0]
         return count > 0
+
     @classmethod
     async def update_guilds(cls):
         """Update all guilds in database to have a settings field if they don't already."""
@@ -82,7 +85,7 @@ class Database:
         row = cursor.fetchone()
         if row:
             members = json.loads(row[0])
-            members.append({"id": member_id, "name": member_name, "high_honor_word_count":0, "low_honor_word_count": 0})
+            members.append({"id": member_id, "name": member_name, "high_honor_word_count": 0, "low_honor_word_count": 0})
             cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
             conn.commit()
 
@@ -99,6 +102,7 @@ class Database:
                     cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
                     conn.commit()
                     break
+
     @classmethod
     async def increment_high_honor_word_count(cls, guild_id, member_id, count) -> None:
         """Add to high honor word count of person's data info in server"""
@@ -108,11 +112,30 @@ class Database:
             members = json.loads(row[0])
             for member in members:
                 if member["id"] == member_id:
-                    member["high_honor_word_count"] += count
+                    # Check if 'high_honor_word_count' key exists
+                    if "high_honor_word_count" in member:
+                        member["high_honor_word_count"] += count
+                    else:
+                        # If not, initialize it with count
+                        member["high_honor_word_count"] = count
                     cursor.execute("UPDATE guilds SET members = ? WHERE guild_id = ?", (json.dumps(members), guild_id))
                     conn.commit()
                     break
 
+    @classmethod
+    async def total_honor(cls, guild_id, member_id) -> int:
+        """Calculate total honor (high honor + low honor word counts) for a member in a guild"""
+        cursor.execute("SELECT members FROM guilds WHERE guild_id = ?", (guild_id,))
+        row = cursor.fetchone()
+        if row:
+            members = json.loads(row[0])
+            for member in members:
+                if member["id"] == member_id:
+                    high_honor_count = member.get("high_honor_word_count", 0)
+                    low_honor_count = member.get("low_honor_word_count", 0)
+                    # Return the sum of high honor count and negation of low honor count
+                    return high_honor_count + (-low_honor_count)
+        return 0
     @classmethod
     async def get_total_documents(cls) -> int:
         """Return total number of documents in database"""
@@ -120,7 +143,7 @@ class Database:
         return cursor.fetchone()[0]
 
     @classmethod
-    async def get_low_honor_word_server_total(cls, guild_id) -> int:
+    async def get_high_honor_word_server_total(cls, guild_id) -> int:
         """Return integer sum of total low honor words said in a server"""
         cursor.execute("SELECT members FROM guilds WHERE guild_id = ?", (guild_id,))
         row = cursor.fetchone()
@@ -129,6 +152,7 @@ class Database:
             total = sum(member.get("high_honor_word_count", 0) for member in members)
             return total
         return 0
+
     @classmethod
     async def get_low_honor_word_server_total(cls, guild_id) -> int:
         """Return integer sum of total low honor words said in a server"""
