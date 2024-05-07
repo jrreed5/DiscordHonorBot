@@ -123,7 +123,7 @@ class LowHonorWordCounter(commands.Cog):
         word_count = await self.get_member_word_count(ctx.guild.id, user.id)
         await ctx.respond(embed=await generate_message_embed(
             f"**{user.display_name}** has said low honor words **{word_count:,}** time{'' if word_count == 1 else 's'}",
-            type="info", ctx=ctx), ephemeral=True, delete_after=30)
+            type="info", ctx=ctx), ephemeral=True)
 
 def setup(bot):
     bot.add_cog(LowHonorWordCounter(bot))

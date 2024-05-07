@@ -8,15 +8,6 @@ class LinkCleanerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
-            permissions = message.channel.permissions_for(message.channel.guild.me)
-            # Suppress embeds for bot messages to avoid visual clutter
-            if permissions.manage_messages:
-                await message.edit(suppress=True)
-                # Add :wastebasket: emoji for easy deletion if necessary
-                if permissions.add_reactions and permissions.read_message_history:
-                    await message.add_reaction('🗑')
-
         # Extract links and clean
         urls = re.findall('(?P<url>https?://[^\\s]+)', message.content)
         cleaned = []
