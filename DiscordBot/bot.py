@@ -54,7 +54,7 @@ async def on_ready():
     logger.info(f"Using Python version {platform.python_version()}")
     logger.info(
         f"Running on {platform.system()} {platform.release()} ({os.name})")
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over your messages"))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over Saint Denis"))
     # status_loop.start()
 
 @bot.slash_command(name="ping", description="Pong back latency")
