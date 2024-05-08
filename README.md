@@ -16,33 +16,48 @@ Discord Honor Bot is a multifunction bot that has many different features, varyi
 ### Installing
 
 * Clone this Repository
+* Install all requirements in requirements.txt folder using this command in your venv:
+  ```
+  pip install -r requirements.txt
+  ```
 
 ### Starting Python Webframe
 
-* Set up and run a Python venv and CD into repository clone
-* Run the following command to initialize the database:
+* CD into repository clone
+* Run the following command to initialize the flask webframe:
 ```
-flask --app blogsite init-db
-```
-* Once Database is initialized, run this command:
-```
-flask --app blogsite run
+flask --app leaderboard run
 ```
 
 ### Starting Discord Bot
 
-To be completed
+* Put bot token from bot created in discord developer portal in config.json file
+* In seperate venv instance, CD into /DiscordBot using this command:
+  ```
+  cd /DiscordBot
+  ```
+* Run this command to initialize the bot:
+  ```
+  python bot.py
+  ```
 
 ## Version History
 
 * 0.0
     * Initial Commit
+* 1.0
+    * Baseline Bot Functionality
 
 ## Inspired by
 
 * MEE6
 * Dyno
 * NotSoBot
+
+## Code inspiration from:
+https://github.com/hisham02x/base64-bot
+https://github.com/danielzting/clearurls-discord-bot
+
 
 ## License
 
