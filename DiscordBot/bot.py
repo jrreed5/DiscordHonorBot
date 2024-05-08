@@ -3,6 +3,8 @@ import platform
 import logging
 from json import load
 from pathlib import Path
+from flask import Flask
+import threading
 
 import discord
 from discord.ext import commands, tasks
@@ -10,6 +12,8 @@ from discord.ext import commands, tasks
 # Fetch bot token.
 with Path("../config.json").open() as f:
     config = load(f)
+
+app = Flask(__name__)
 
 TOKEN = config["DISCORD_TOKEN"]
 
@@ -64,6 +68,14 @@ async def ping(ctx: discord.ApplicationContext):
         f"_Pong!_ ({round(bot.latency * 1000, 1)} ms)",
         ephemeral=True,
         delete_after=15)
+
+# Initialize flask app
+def run_flask(flask_app):
+    flask_app.run(host='0.0.0.0', port=5000)  # Run the Flask app on localhost:5000
+
+# Start a thread to run the Flask app
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.start()
 
 if __name__ == "__main__":
     bot.run(TOKEN, reconnect=True)

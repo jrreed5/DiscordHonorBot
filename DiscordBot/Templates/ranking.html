@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Ranking</title>
+</head>
+<body>
+    <h1>Member Ranking</h1>
+    <ol>
+        {% for member in members %}
+            <li>{{ member[2] }} - Total Honor: {{ member[3] }}</li>
+        {% endfor %}
+    </ol>
+</body>
+</html>
