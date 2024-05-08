@@ -24,8 +24,7 @@ intents.message_content = True
 intents.presences = False
 
 bot = commands.Bot(
-    intents=intents,
-    owner_id=1236297405079486514
+    intents=intents
 )
 # Logging (DEBUG clogs my stdout).
 logger = logging.getLogger("discord")

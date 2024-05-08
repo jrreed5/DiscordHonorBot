@@ -1,7 +1,7 @@
+import logging
 import os
 
 import discord
-import logging
 
 
 class Developer(discord.Cog):

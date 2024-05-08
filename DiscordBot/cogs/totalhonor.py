@@ -2,7 +2,7 @@ import discord
 from discord import option
 from discord.ext import commands
 from utils.database import Database
-from utils.discord import convert_color, generate_message_embed
+from utils.discord import generate_message_embed
 
 class TotalHonor(commands.Cog):
     async def generate_honor_bar(self, total_honor):

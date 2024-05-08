@@ -1,10 +1,11 @@
 import random
 import string
+
 import discord
 from discord import option
 from discord.ext import commands
 from utils.database import Database
-from utils.discord import convert_color, generate_message_embed
+from utils.discord import generate_message_embed
 
 LOWWORDS_LIST = [
     "sad", "angry"
@@ -48,11 +49,7 @@ class LowHonorWordCounter(commands.Cog):
         elif word_count < 100:
             msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
         else:
-            msg = random.choice(
-                [
-                 "..."
-                 ]
-            )
+            msg = "..."
 
         return msg
     @commands.Cog.listener()
@@ -88,7 +85,7 @@ class LowHonorWordCounter(commands.Cog):
 
         response = self.get_msg_response(word_count=num_words)
 
-        await message.reply(f"{message.author.mention} {response}")
+        await message.reply(f" {response}")
 
     def verify_mentions(self, mentions: discord.Member,
                         ctx: discord.ApplicationContext) -> str:

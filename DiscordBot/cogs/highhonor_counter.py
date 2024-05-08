@@ -1,10 +1,11 @@
 import random
 import string
+
 import discord
 from discord import option
 from discord.ext import commands
 from utils.database import Database
-from utils.discord import convert_color, generate_message_embed
+from utils.discord import generate_message_embed
 
 HIGHWORDS_LIST = [
     "happy", "gleeful"
@@ -48,11 +49,7 @@ class HighHonorWordCounter(commands.Cog):
         elif word_count < 100:
             msg = "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
         else:
-            msg = random.choice(
-                [
-                 "..."
-                 ]
-            )
+            msg = "..."
 
         return msg
 
@@ -89,7 +86,7 @@ class HighHonorWordCounter(commands.Cog):
 
         response = self.get_msg_response(word_count=num_words)
 
-        await message.reply(f"{message.author.mention} {response}")
+        await message.reply(f"{response}")
 
     def verify_mentions(self, mentions: discord.Member,
                         ctx: discord.ApplicationContext) -> str:
