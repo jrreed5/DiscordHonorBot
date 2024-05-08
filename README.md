@@ -21,17 +21,10 @@ Discord Honor Bot is a multifunction bot that has many different features, varyi
   pip install -r requirements.txt
   ```
 
-### Starting Python Webframe
-
-* CD into repository clone
-* Run the following command to initialize the flask webframe:
-```
-flask --app leaderboard run
-```
-
-### Starting Discord Bot
+### Starting Discord Bot and webframe
 
 * Put bot token from bot created in discord developer portal in config.json file
+* Adjust IP and port on bot to user specifications
 * In seperate venv instance, CD into /DiscordBot using this command:
   ```
   cd /DiscordBot
