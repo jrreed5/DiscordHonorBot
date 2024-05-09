@@ -5,9 +5,6 @@ import json
 
 app = Flask(__name__)
 
-# Replace with your secret key for session management
-app.secret_key = 'your_secret_key_here'
-
 def create_connection(db_file):
     """Create a database connection to the SQLite database specified by db_file"""
     conn = None
