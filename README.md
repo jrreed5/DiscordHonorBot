@@ -6,6 +6,12 @@
 
 Discord Honor Bot is a multifunction bot that has many different features, varying from fun to quality of life utilities. 
 
+## Invite Link
+  Coming Soon
+
+## Command Syntax
+  HonorBot uses discord's new slash command integration, typing '/' into the text bar will bring up available commands and information.
+
 ## Getting Started
 
 ### Dependencies
@@ -20,11 +26,20 @@ Discord Honor Bot is a multifunction bot that has many different features, varyi
   ```
   pip install -r requirements.txt
   ```
-
-### Starting Discord Bot and webframe
+### Starting Web Frame
+* Adjust IP and port settings on bot to user specifications
+*  In venv instance, CD into /DiscordBot using this command:
+  ```
+  cd /DiscordBot
+  ```
+* Run this command to initialize flask:
+  ```
+  python flaskapp.py
+  ```
+  
+### Starting Discord Bot
 
 * Put bot token from bot created in discord developer portal in config.json file
-* Adjust IP and port on bot to user specifications
 * In seperate venv instance, CD into /DiscordBot using this command:
   ```
   cd /DiscordBot
