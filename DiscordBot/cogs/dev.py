@@ -1,6 +1,10 @@
 import logging
 import os
 
+# INF601 - Advanced Programming in Python
+# Jackson Reed
+# Mini Project 4
+
 import discord
 
 

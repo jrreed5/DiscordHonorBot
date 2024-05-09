@@ -1,3 +1,7 @@
+# INF601 - Advanced Programming in Python
+# Jackson Reed
+# Mini Project 4
+
 import io
 import aiohttp
 import discord

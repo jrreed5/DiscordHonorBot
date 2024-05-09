@@ -1,3 +1,7 @@
+# INF601 - Advanced Programming in Python
+# Jackson Reed
+# Mini Project 4
+
 import base64
 import discord
 from discord.ext import commands, tasks

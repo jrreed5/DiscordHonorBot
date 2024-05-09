@@ -1,3 +1,7 @@
+# INF601 - Advanced Programming in Python
+# Jackson Reed
+# Mini Project 4
+
 from flask import Flask, render_template
 from utils.database import Database
 import sqlite3
