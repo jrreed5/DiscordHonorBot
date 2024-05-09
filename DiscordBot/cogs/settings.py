@@ -1,6 +1,6 @@
 # INF601 - Advanced Programming in Python
 # Jackson Reed
-# Mini Project 4
+# Final Project
 
 import discord
 from discord.ext import commands
