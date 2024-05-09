@@ -3,17 +3,14 @@ import platform
 import logging
 from json import load
 from pathlib import Path
-from flask import Flask
-import threading
-
 import discord
 from discord.ext import commands, tasks
+
 
 # Fetch bot token.
 with Path("../config.json").open() as f:
     config = load(f)
 
-app = Flask(__name__)
 
 TOKEN = config["DISCORD_TOKEN"]
 
@@ -21,6 +18,7 @@ TOKEN = config["DISCORD_TOKEN"]
 # DO NOT TOUCH - for running on hosting platform.
 if TOKEN == "":
     TOKEN = os.environ.get("DISCORD_TOKEN")
+
 
 intents = discord.Intents.default()
 intents.members = True
@@ -38,7 +36,6 @@ handler = logging.FileHandler(
 handler.setFormatter(logging.Formatter(
     "%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
 logger.addHandler(handler)
-
 # Load cogs
 for filename in os.listdir('./cogs'):
     if filename.endswith('.py'):
@@ -60,6 +57,7 @@ async def on_ready():
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over Saint Denis"))
     # status_loop.start()
 
+
 @bot.slash_command(name="ping", description="Pong back latency")
 async def ping(ctx: discord.ApplicationContext):
     """Pong back latency"""
@@ -68,14 +66,5 @@ async def ping(ctx: discord.ApplicationContext):
         f"_Pong!_ ({round(bot.latency * 1000, 1)} ms)",
         ephemeral=True,
         delete_after=15)
-
-# Initialize flask app
-def run_flask(flask_app):
-    flask_app.run(host='0.0.0.0', port=5000)  # Run the Flask app on localhost:5000
-
-# Start a thread to run the Flask app
-flask_thread = threading.Thread(target=run_flask)
-flask_thread.start()
-
 if __name__ == "__main__":
     bot.run(TOKEN, reconnect=True)
