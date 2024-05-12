@@ -1,7 +1,3 @@
-# INF601 - Advanced Programming in Python
-# Jackson Reed
-# Final Project
-
 import random
 import string
 
@@ -12,9 +8,11 @@ from utils.database import Database
 from utils.discord import generate_message_embed
 
 LOWWORDS_LIST = [
-    "sad", "angry"
+    "birdy", "earl", "porky", "rizz",
+    "gyat", "ohio", "sigma", "besse",
+    "thirstys", "gamerdog", "kroger",
+    "kelei", "cammy", "extralifegaming"
 ]
-
 
 class LowHonorWordCounter(commands.Cog):
     """Commands for word count tracking"""
@@ -56,6 +54,7 @@ class LowHonorWordCounter(commands.Cog):
             msg = "..."
 
         return msg
+
     @commands.Cog.listener()
     async def on_message(self, message):
         """Detect low honor words"""
@@ -125,6 +124,7 @@ class LowHonorWordCounter(commands.Cog):
         await ctx.respond(embed=await generate_message_embed(
             f"**{user.display_name}** has said low honor words **{word_count:,}** time{'' if word_count == 1 else 's'}",
             type="info", ctx=ctx), ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(LowHonorWordCounter(bot))

@@ -1,15 +1,20 @@
-# INF601 - Advanced Programming in Python
-# Jackson Reed
-# Final Project
-
 import os
 import platform
 import logging
+import random
+import asyncio
 from json import load
 from pathlib import Path
 import discord
 from discord.ext import commands, tasks
 
+# Define your list of towns
+towns = ["Saint Denis", "Valentine", "Rhodes", "Blackwater",
+         "Strawberry", "Tumbleweed", "Armadillo", "Van Horn",
+         "Annesburg", "Emerald Ranch", "Hays Kansas", "Bunkie's House"]
+
+#interval for changing the presence (in seconds)
+change_interval = 6 * 60 * 60
 
 # Fetch bot token.
 with Path("../config.json").open() as f:
@@ -32,7 +37,7 @@ intents.presences = False
 bot = commands.Bot(
     intents=intents
 )
-# Logging (DEBUG clogs my stdout).
+# Logging.
 logger = logging.getLogger("discord")
 logger.setLevel(logging.INFO)
 handler = logging.FileHandler(
@@ -56,10 +61,13 @@ async def on_ready():
     logger.info(f"{bot.user.name} connected!")
     logger.info(f"Using Discord.py version {discord.__version__}")
     logger.info(f"Using Python version {platform.python_version()}")
-    logger.info(
-        f"Running on {platform.system()} {platform.release()} ({os.name})")
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over Saint Denis"))
-    # status_loop.start()
+    logger.info(f"Running on {platform.system()} {platform.release()} ({os.name})")
+    # Choose a random town from the list
+    town = random.choice(towns)
+    # Update the bot's presence
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"over {town}"))
+    # Wait for the specified interval
+    await asyncio.sleep(change_interval)
 
 
 @bot.slash_command(name="ping", description="Pong back latency")

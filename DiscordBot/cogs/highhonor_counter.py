@@ -12,7 +12,9 @@ from utils.database import Database
 from utils.discord import generate_message_embed
 
 HIGHWORDS_LIST = [
-    "happy", "gleeful"
+    "bunkie", "bunk", "bunkatron", "pasta",
+    "playstation", "lucia", "jason", "profz",
+    "zeller", "jon", "steve"
 ]
 
 
@@ -29,8 +31,7 @@ class HighHonorWordCounter(commands.Cog):
     def count_words(self, msg: str) -> int:
         """Return occurrences of high honor words in a given message"""
         count = 0
-        msg = msg.lower().strip().translate(
-            {ord(char): "" for char in string.whitespace})
+        msg = msg.lower().strip().split()
         for low in self.high_honor_words:
             count += msg.count(low)
         # Return count if count is positive, else return 0
