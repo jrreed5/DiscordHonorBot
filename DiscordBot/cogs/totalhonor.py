@@ -53,7 +53,7 @@ class TotalHonor(commands.Cog):
             return ""
 
     @commands.slash_command(
-        name="count_total",
+        name="total",
         description="Get a user's total honor word count")
     @option(name="user", description="User to get count of", required=False)
     async def count_total(self, ctx, user: discord.Member = None):

@@ -1,9 +1,6 @@
-# INF601 - Advanced Programming in Python
-# Jackson Reed
-# Final Project
-
 import random
 import string
+import time
 
 import discord
 from discord import option
@@ -14,27 +11,25 @@ from utils.discord import generate_message_embed
 HIGHWORDS_LIST = [
     "bunkie", "bunk", "bunkatron", "pasta",
     "playstation", "lucia", "jason", "profz",
-    "zeller", "jon", "steve"
+    "zeller", "jon", "steve", "reedle", "honorbot"
 ]
-
 
 class HighHonorWordCounter(commands.Cog):
     """Commands for word count tracking"""
 
     def __init__(self, bot):
         self.bot = bot
-
         self.db = Database()
-
         self.high_honor_words = HIGHWORDS_LIST
+        self.recent_high_messages = {}  # Dictionary to store recent high honor messages
+        self.high_cooldowns = {}  # Dictionary to store high honor cooldowns
 
     def count_words(self, msg: str) -> int:
         """Return occurrences of high honor words in a given message"""
         count = 0
         msg = msg.lower().strip().split()
-        for low in self.high_honor_words:
-            count += msg.count(low)
-        # Return count if count is positive, else return 0
+        for word in self.high_honor_words:
+            count += msg.count(word)
         return count if count >= 0 else 0
 
     async def get_member_word_count(self, guild_id, member_id) -> int:
@@ -46,17 +41,14 @@ class HighHonorWordCounter(commands.Cog):
 
     def get_msg_response(self, word_count: int) -> str:
         """Return bot message response"""
-        msg = None
-        if word_count < 5:
-            msg = "<:HighHonor:1199342542592933959>"
-        elif word_count < 25:
-            msg = "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
-        elif word_count < 100:
-            msg = "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
+        if word_count < 1:
+            return "<:HighHonor:1199342542592933959>"
+        elif word_count < 3:
+            return "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
+        elif word_count < 5:
+            return "<:HighHonor:1199342542592933959><:HighHonor:1199342542592933959><:HighHonor:1199342542592933959>"
         else:
-            msg = "..."
-
-        return msg
+            return "<:HighHonor:1199342542592933959>"
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -65,43 +57,59 @@ class HighHonorWordCounter(commands.Cog):
             return
         if message.author.bot:  # Ignore spammy bots.
             return
-
-        guild = message.guild
-        msg = message.content
-        author = message.author  # Should fetch user by ID instead of name.
-
-        # Ensure guild has its own place in the database.
-        if not await self.db.guild_in_database(guild.id):
-            await self.db.create_database(guild.id, guild.name)
-
-        # Bot reaction to any high honor word occurrence.
-        num_words = self.count_words(msg)
-
-        # No high honor words found.
-        if num_words <= 0:
-            return
-
         if message.webhook_id:  # Ignore webhooks.
             return
 
-        if not await self.db.member_in_database(guild.id, author.id):
-            await self.db.create_member(guild.id, author.id, author.name)
+        guild_id = message.guild.id
+        author_id = message.author.id
+        msg = message.content
+        current_time = time.time()
 
-        await self.db.increment_high_honor_word_count(guild.id, author.id, num_words)
+        # Check for high honor words in the message
+        num_words = self.count_words(msg)
+
+        # If no high honor words found, no further action is needed
+        if num_words <= 0:
+            return
+
+        # Check if user is on cooldown for high honor words
+        if author_id in self.high_cooldowns and current_time < self.high_cooldowns[author_id]:
+            await message.reply("You are on cooldown for spamming high honor words. Please wait before sending more messages.")
+            return
+
+        # Check if guild has its own place in the database.
+        if not await self.db.guild_in_database(guild_id):
+            await self.db.create_database(guild_id, message.guild.name)
+
+        # Spam prevention check for high honor words
+        if author_id not in self.recent_high_messages:
+            self.recent_high_messages[author_id] = []
+
+        # Remove old messages
+        self.recent_high_messages[author_id] = [
+            (t, c) for t, c in self.recent_high_messages[author_id] if current_time - t <= 5
+        ]
+
+        self.recent_high_messages[author_id].append((current_time, num_words))
+
+        total_words_in_5_seconds = sum(c for t, c in self.recent_high_messages[author_id])
+
+        if total_words_in_5_seconds > 5:
+            self.high_cooldowns[author_id] = current_time + 300  # 5 minute cooldown
+            await message.reply("You are sending messages too quickly. You are now on a 5-minute cooldown.")
+            return
+
+        # Database operations only if not on cooldown and message count is valid
+        if not await self.db.member_in_database(guild_id, author_id):
+            await self.db.create_member(guild_id, author_id, message.author.name)
+
+        await self.db.increment_high_honor_word_count(guild_id, author_id, num_words)
 
         response = self.get_msg_response(word_count=num_words)
-
         await message.reply(f"{response}")
 
-    def verify_mentions(self, mentions: discord.Member,
-                        ctx: discord.ApplicationContext) -> str:
-        """Check if mention being passed into command is valid. This is no longer needed as discord does this for us.
-        With slash commands.
-
-        This code checks if the user is in the guild, and if not, returns an error message.
-        """
-
-        # Ensure user is part of guild.
+    def verify_mentions(self, mentions: discord.Member, ctx: discord.ApplicationContext) -> str:
+        """Check if mention being passed into command is valid."""
         guild = ctx.guild
         if not guild.get_member(mentions.id):
             return "User not in server"
@@ -116,6 +124,7 @@ class HighHonorWordCounter(commands.Cog):
         """Get a person's total high honor word count"""
         await ctx.defer()
         user = user if user else ctx.author
+
         # Validate mention.
         invalid_mention_msg = self.verify_mentions(user, ctx)
         if invalid_mention_msg:
@@ -127,6 +136,7 @@ class HighHonorWordCounter(commands.Cog):
         await ctx.respond(embed=await generate_message_embed(
             f"**{user.display_name}** has said high honor words **{word_count:,}** time{'' if word_count == 1 else 's'}",
             type="info", ctx=ctx), ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(HighHonorWordCounter(bot))

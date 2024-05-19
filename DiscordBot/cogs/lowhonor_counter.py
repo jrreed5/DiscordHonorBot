@@ -1,5 +1,6 @@
 import random
 import string
+import time
 
 import discord
 from discord import option
@@ -10,8 +11,11 @@ from utils.discord import generate_message_embed
 LOWWORDS_LIST = [
     "birdy", "earl", "porky", "rizz",
     "gyat", "ohio", "sigma", "besse",
-    "thirstys", "gamerdog", "kroger",
-    "kelei", "cammy", "extralifegaming"
+    "thirstys", "kroger", "kelei", "cammy",
+    "extralifegaming", "brent",
+]
+SUPERLOW = [
+    "gamerdog", "gdog", "jesse", "pottypoopoo", "<@188732205525106688>", "cope"
 ]
 
 class LowHonorWordCounter(commands.Cog):
@@ -19,19 +23,21 @@ class LowHonorWordCounter(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
         self.db = Database()
-
         self.low_honor_words = LOWWORDS_LIST
+        self.super_low_words = SUPERLOW
+        self.recent_low_messages = {}  # Dictionary to store recent low honor messages
+        self.low_cooldowns = {}  # Dictionary to store low honor cooldowns
 
     def count_words(self, msg: str) -> int:
         """Return occurrences of low honor words in a given message"""
         count = 0
-        msg = msg.lower().strip().translate(
-            {ord(char): "" for char in string.whitespace})
-        for low in self.low_honor_words:
-            count += msg.count(low)
-        # Return count if count is positive, else return 0
+        msg = msg.lower().strip().split()
+        for word in self.low_honor_words:
+            count += msg.count(word)
+        for word in self.super_low_words:
+            if word in msg:
+                count += 100  # Add 100 for the specific term
         return count if count >= 0 else 0
 
     async def get_member_word_count(self, guild_id, member_id) -> int:
@@ -43,17 +49,14 @@ class LowHonorWordCounter(commands.Cog):
 
     def get_msg_response(self, word_count: int) -> str:
         """Return bot message response"""
-        msg = None
-        if word_count < 5:
-            msg = "<:LowHonor:1199342578085154886>"
-        elif word_count < 25:
-            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
-        elif word_count < 100:
-            msg = "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
+        if word_count < 1:
+            return "<:LowHonor:1199342578085154886>"
+        elif word_count < 3:
+            return "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
+        elif word_count < 5:
+            return "<:LowHonor:1199342578085154886><:LowHonor:1199342578085154886><:LowHonor:1199342578085154886>"
         else:
-            msg = "..."
-
-        return msg
+            return "<:LowHonor:1199342578085154886>"
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -62,43 +65,57 @@ class LowHonorWordCounter(commands.Cog):
             return
         if message.author.bot:  # Ignore spammy bots.
             return
-
-        guild = message.guild
-        msg = message.content
-        author = message.author  # Should fetch user by ID instead of name.
-
-        # Ensure guild has its own place in the database.
-        if not await self.db.guild_in_database(guild.id):
-            await self.db.create_database(guild.id, guild.name)
-
-        # Bot reaction to any low honor word occurrence.
-        num_words = self.count_words(msg)
-
-        # No low honor words found.
-        if num_words <= 0:
-            return
-
         if message.webhook_id:  # Ignore webhooks.
             return
 
-        if not await self.db.member_in_database(guild.id, author.id):
-            await self.db.create_member(guild.id, author.id, author.name)
+        guild_id = message.guild.id
+        author_id = message.author.id
+        msg = message.content
+        current_time = time.time()
 
-        await self.db.increment_low_honor_word_count(guild.id, author.id, num_words)
+        # Check for low honor words in the message
+        num_words = self.count_words(msg)
+
+        # If no low honor words found, no further action is needed
+        if num_words <= 0:
+            return
+
+        # Check if user is on cooldown for low honor words
+        if author_id in self.low_cooldowns and current_time < self.low_cooldowns[author_id]:
+            await message.reply("You are on cooldown for spamming low honor words. Please wait before sending more messages.")
+            return
+
+        # Check if guild has its own place in the database.
+        if not await self.db.guild_in_database(guild_id):
+            await self.db.create_database(guild_id, message.guild.name)
+
+        # Spam prevention check for low honor words
+        if author_id not in self.recent_low_messages:
+            self.recent_low_messages[author_id] = []
+
+        # Remove old messages
+        self.recent_low_messages[author_id] = [
+            (t, c) for t, c in self.recent_low_messages[author_id] if current_time - t <= 5
+        ]
+
+        self.recent_low_messages[author_id].append((current_time, num_words))
+
+        if len(self.recent_low_messages[author_id]) > 5:
+            self.low_cooldowns[author_id] = current_time + 300  # 5 minute cooldown
+            await message.reply("You are sending messages too quickly. You are now on a 5-minute cooldown.")
+            return
+
+        # Database operations only if not on cooldown and message count is valid
+        if not await self.db.member_in_database(guild_id, author_id):
+            await self.db.create_member(guild_id, author_id, message.author.name)
+
+        await self.db.increment_low_honor_word_count(guild_id, author_id, num_words)
 
         response = self.get_msg_response(word_count=num_words)
+        await message.reply(f"{response}")
 
-        await message.reply(f" {response}")
-
-    def verify_mentions(self, mentions: discord.Member,
-                        ctx: discord.ApplicationContext) -> str:
-        """Check if mention being passed into command is valid. This is no longer needed as discord does this for us.
-        With slash commands.
-
-        This code checks if the user is in the guild, and if not, returns an error message.
-        """
-
-        # Ensure user is part of guild.
+    def verify_mentions(self, mentions: discord.Member, ctx: discord.ApplicationContext) -> str:
+        """Check if mention being passed into command is valid."""
         guild = ctx.guild
         if not guild.get_member(mentions.id):
             return "User not in server"
@@ -106,13 +123,14 @@ class LowHonorWordCounter(commands.Cog):
             return ""
 
     @commands.slash_command(
-        name="count",
+        name="count_low",
         description="Get a person's total low honor word count")
     @option(name="user", description="User to get count of", required=False)
     async def count(self, ctx, user: discord.Member = None):
         """Get a person's total low honor word count"""
         await ctx.defer()
         user = user if user else ctx.author
+
         # Validate mention.
         invalid_mention_msg = self.verify_mentions(user, ctx)
         if invalid_mention_msg:
@@ -124,7 +142,6 @@ class LowHonorWordCounter(commands.Cog):
         await ctx.respond(embed=await generate_message_embed(
             f"**{user.display_name}** has said low honor words **{word_count:,}** time{'' if word_count == 1 else 's'}",
             type="info", ctx=ctx), ephemeral=True)
-
 
 def setup(bot):
     bot.add_cog(LowHonorWordCounter(bot))
